@@ -133,7 +133,7 @@ if (this.wykrywajKolizje(nowaGłowa)) {
 	return;
 }
 
-this.segmeny.unshift(nowaGłowa);
+this.segmenty.unshift(nowaGłowa);
 
 if (nowaGłowa.porównaj(jabłko.pozycja)) {
 	wynik++;
@@ -165,7 +165,7 @@ Wąż.prototype.wykrywajKolizje = function (głowa) {
 
 //Ustawianie następnego kierunku węża na podstawie naciśniętego klawisza
 Wąż.prototype.ustawKierunek = function (nowyKierunek) {
-	if (this.kierunek === "góra" && nowyKierunek === "dół")
+	if (this.kierunek === "góra" && nowyKierunek === "dół"){
 		return;
 	} else if (this.kierunek === "prawa" && nowyKierunek === "lewa") {
 		return;
@@ -184,14 +184,14 @@ var Jabłko = function () {
 };
 
 //W miejscu, gdzie znajduje się jabłko, rysowanie okręgu
-Jbłko.prototype.rysuj = function () {
+Jabłko.prototype.rysuj = function () {
 	this.pozycja.rysujOkrąg("Red");
 };
 
 //Przenoszenie jabłka w losowe miejsce
 Jabłko.prototype.przenieś = function () {
-	var losowaKolumna = Math.floor(Math.Random() * (szerokośćWBlokach - 2)) + 1;
-	var losowyWiersz = Math.floor(Math.Random() * (wysokośćWBlokach - 2)) + 1;
+	var losowaKolumna = Math.floor(Math.random() * (szerokośćWBlokach - 2)) + 1;
+	var losowyWiersz = Math.floor(Math.random() * (wysokośćWBlokach - 2)) + 1;
 	this.pozycja = new Blok(losowaKolumna, losowyWiersz);
 };
 
@@ -201,7 +201,7 @@ var jabłko = new Jabłko();
 
 //Przesyłanie do funkcji setInterval funkcję odpowiedzialną za animację
 var IdPrzedziału = setInterval(function () {
-	kontekst.clear.Rect(0, 0, szerokość, wysokość);
+	kontekst.clearRect(0, 0, szerokość, wysokość);
 	rysujWynik();
 	wąż.przesuń();
 	wąż.rysuj();
