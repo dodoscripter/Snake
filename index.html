@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>MOJA GRA! WĄŻ</title>
+</head>
+
+<body>
+<canvas id="płótno" width="400" height="400"></canvas>
+
+<script src="https://code.jquery.com/jquery-2.1.0.js"></script>
+
+<script>
+//Ustawianie płótna
+var płótno = document.getElementById("płótno");
+var kontekst = płótno.getContext("2d");
+
+//Szerokość i Wysokość 
+var szerokość = płótno.width;
+var wysokość = płótno.height;
+
+//Siatka (niewidoczna plansza)
+var rozmiarBloku = 10;
+var szerokośćWBlokach = szerokość / rozmiarBloku;
+var wysokośćWBlokach = wysokość / rozmiarBloku;
+
+//Ustawianie wyniku na 0
+var wynik = 0;
+
+//Rysowanie obramowania (niewiem czy srebrny zadziała)
+var rysujObramowanie = function () {
+	kontekst.fillStyle = "Silver";
+	kontekst.fillRect(0, 0, szerokość, rozmiarBloku);
+	kontekst.fillRect(0, wysokość - rozmiarBloku, szerokość, rozmiarBloku);
+	kontekst.fillRect(0, 0, rozmiarBloku, szerokość);
+	kontekst.fillRect(szerokość - rozmiarBloku, 0, rozmiarBloku, wysokość);
+};
+
+//Rysowanie wyniku w lewym górnym rogu
+var rysujWynik = function () {
+	kontekst.font = "20px Comic Sans MS";
+	kontekst.fillStyle = "Gold";
+	kontekst.textAlign = "left";
+	kontekst.textBaseline = "top";
+	kontekst.fillText("Wynik: " + wynik, rozmiarBloku, rozmiarBloku);
+};
+
+//Kończenie gry (Game Over)
+var koniecGry = function () {
+	clearInterval(IdPrzedziału);
+	kontekst.font = "60px Courier";
+	kontekst.fillStyle = "Red";
+	kontekst.textAlign = "center";
+	kontekst.textBaseline = "middle";
+	kontekst.fillText("Game Over", szerokość / 2, wysokość / 2);
+};
+
+//Rysowanie okręgu
+var okrąg = function (x, y, promień, wypełnijOkrąg) {
+	kontekst.beginPath();
+	kontekst.arc(x, y, promień, 0, Math.PI * 2, false);
+	if (wypełnijOkrąg) {
+		kontekst.fill();
+	} else {
+		kontekst.stroke();
+	}
+};
+
+//Konstruktor Blok
+var Blok = function (kolumna, wiersz) {
+	this.kolumna = kolumna;
+	this.wiersz = wiersz;
+};
+
+//Tam gdzie jest blok, rysuje kwadrat
+Blok.prototype.rysujKwadrat = function(kolor) {
+	var x = this.kolumna * rozmiarBloku;
+	var y = this.wiersz * rozmiarBloku;
+	kontekst.fillStyle = kolor;
+	kontekst.fillRect(x, y, rozmiarBloku, rozmiarBloku);
+};
+
+//Tam gdzie jest blok, rysuje okrąg
+Blok.prototype.rysujOkrąg = function (kolor) {
+	var środekX = this.kolumna * rozmiarBloku + rozmiarBloku / 2;
+	var środekY = this.wiersz * rozmiarBloku + rozmiarBloku / 2;
+	kontekst.fillStyle = kolor;
+	okrąg(środekX, środekY, rozmiarBloku / 2, true);
+};
+
+//Sprawdzanie czy blok nie znajduje się w tym samym miejscu co inny blok
+Blok.prototype.porównaj = function(innyBlok) {
+	return this.kolumna === innyBlok.kolumna && this.wiersz === innyBlok.wiersz;
+};
+
+//Konstruktor Wąż
+var Wąż = function () {
+	this.segmenty = [
+		new Blok(7, 5),
+		new Blok(6, 5),
+		new Blok(5, 5)
+	];
+
+	this.kierunek = "prawa";
+	this.następnyKierunek = "prawa";
+};
+
+//Każdy segment ciała węża ma być narysowany jako kwadrat
+Wąż.prototype.rysuj = function () {
+	for (var i = 0; i < this.segmenty.length; i++) {
+		this.segmenty[i].rysujKwadrat("Blue");
+	}
+};
+
+//Utwórz nową głowę i umieść ją z przodu węża,aby wąż przesunął się zgodnie z bieżącym kierunkiem
+Wąż.prototype.przesuń = function () {
+	var głowa = this.segmenty[0];
+	var nowaGłowa;
+
+	this.kierunek = this.następnyKierunek;
+
+	if (this.kierunek === "prawa") {
+		nowaGłowa = new Blok(głowa.kolumna + 1, głowa.wiersz);
+	} else if (this.kierunek === "dół" ) {
+		nowaGłowa = new Blok(głowa.kolumna, głowa.wiersz + 1);
+	} else  if (this.kierunek === "lewa" ) {
+		nowaGłowa = new Blok(głowa.kolumna - 1, głowa.wiersz);
+	}  else if (this.kierunek === "góra" ) {
+		nowaGłowa = new Blok(głowa.kolumna, głowa.wiersz - 1);
+}
+
+if (this.wykrywajKolizje(nowaGłowa)) {
+	koniecGry();
+	return;
+}
+
+this.segmeny.unshift(nowaGłowa);
+
+if (nowaGłowa.porównaj(jabłko.pozycja)) {
+	wynik++;
+	jabłko.przenieś();
+} else {
+	this.segmenty.pop();
+	}
+};
+
+//Sprawdzanie, czy nowa głowa węża zderzyła się ze ścianą lub z ogonem
+Wąż.prototype.wykrywajKolizje = function (głowa) {
+	var lewaKolizja = (głowa.kolumna === 0);
+	var góraKolizja = (głowa.wiersz === 0);
+	var prawaKolizja = (głowa.kolumna === szerokośćWBlokach - 1);
+	var dółKolizja = (głowa.wiersz === wysokośćWBlokach - 1);
+
+	var ścianąKolizja = lewaKolizja || góraKolizja || prawaKolizja || dółKolizja;
+
+	var ogonKolizja = false;
+
+	for (var i = 0; i < this.segmenty.length; i++) {
+		if (głowa.porównaj(this.segmenty[i])) {
+			ogonKolizja = true;
+		}
+	}
+
+	return ścianąKolizja || ogonKolizja;
+};
+
+//Ustawianie następnego kierunku węża na podstawie naciśniętego klawisza
+Wąż.prototype.ustawKierunek = function (nowyKierunek) {
+	if (this.kierunek === "góra" && nowyKierunek === "dół")
+		return;
+	} else if (this.kierunek === "prawa" && nowyKierunek === "lewa") {
+		return;
+	 } else if (this.kierunek === "dół" && nowyKierunek === "góra") {
+		return;
+	} else if (this.kierunek === "lewa" && nowyKierunek === "prawa") {
+		return;
+	}
+
+	this.następnyKierunek = nowyKierunek;
+};
+
+//konstruktor Jabłko
+var Jabłko = function () {
+	this.pozycja = new Blok(10, 10);
+};
+
+//W miejscu, gdzie znajduje się jabłko, rysowanie okręgu
+Jbłko.prototype.rysuj = function () {
+	this.pozycja.rysujOkrąg("Red");
+};
+
+//Przenoszenie jabłka w losowe miejsce
+Jabłko.prototype.przenieś = function () {
+	var losowaKolumna = Math.floor(Math.Random() * (szerokośćWBlokach - 2)) + 1;
+	var losowyWiersz = Math.floor(Math.Random() * (wysokośćWBlokach - 2)) + 1;
+	this.pozycja = new Blok(losowaKolumna, losowyWiersz);
+};
+
+//Stworzenie obiektów Wąż i Jabłko
+var wąż = new Wąż();
+var jabłko = new Jabłko();
+
+//Przesyłanie do funkcji setInterval funkcję odpowiedzialną za animację
+var IdPrzedziału = setInterval(function () {
+	kontekst.clear.Rect(0, 0, szerokość, wysokość);
+	rysujWynik();
+	wąż.przesuń();
+	wąż.rysuj();
+	jabłko.rysuj();
+	rysujObramowanie();
+
+}, 100);
+
+//Przekształcanie kodów klawiszy na kierunki
+var kierunki = {
+	37: "lewa",
+	38: "góra",
+	39: "prawa",
+	40: "dół"
+};
+
+//Funkcja obsługi zdarzenia keydown,przeznaczona do obsługi wciśnięć klawiszy strzałek kierunkowych
+$("body").keydown(function (zdarzenie) {
+	var nowyKierunek = kierunki[zdarzenie.keyCode]
+	if (nowyKierunek !== undefined) {
+		wąż.ustawKierunek(nowyKierunek);
+	}
+});
+
+</script>
+</body>
+</html>
